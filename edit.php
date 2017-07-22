@@ -1,11 +1,19 @@
 <?php
+  session_start();
   require('config/config.php');
   require('config/db.php');
 
-  //Get ID from URL
+  # Session Check
+  if (isset($_SESSION['previous'])) {
+    if (basename($_SERVER['PHP_SELF']) != $_SESSION['previous']) {
+      session_destroy();
+    }
+  }
+
+  // Get ID from URL
   $id = mysqli_real_escape_string($conn, $_GET['id']);
 
-  //Update
+  // Update
   if(isset($_POST['btn-edit'])){
     $name = mysqli_real_escape_string($conn, $_POST['name']);
     $age = mysqli_real_escape_string($conn, $_POST['age']);
@@ -17,6 +25,10 @@
 
     $query = "UPDATE official_tbl SET name='$name', age='$age', region='$reg', province='$pro', city='$city', position='$pos', party='$pa' WHERE id={$id}";
     if (mysqli_query($conn, $query)) {
+      $_SESSION['prompt'] = array(
+        'message' => 'Information successfully updated!', 
+        'isError' => false
+      );
       header('Location: '.ROOT_URL.'');
     }else{
       echo 'Error: '.mysqli_error($conn);

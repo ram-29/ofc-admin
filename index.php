@@ -1,8 +1,18 @@
 <?php
+  session_start();
   require('config/config.php');
   require('config/db.php');
 
-  //Add
+  $_SESSION['previous'] = basename($_SERVER['PHP_SELF']);
+
+  # Session Check
+  if (isset($_SESSION['previous'])) {
+    if (basename($_SERVER['PHP_SELF']) != $_SESSION['previous']) {
+      session_destroy();
+    }
+  }
+
+  // Add
   if(isset($_POST['btn-add'])){
     $name = mysqli_real_escape_string($conn, $_POST['name']);
     $age = mysqli_real_escape_string($conn, $_POST['age']);
@@ -15,18 +25,26 @@
     $query = "INSERT INTO official_tbl(name, age, region, province, city, position, party) VALUES('$name', '$age', '$reg', '$pro', '$city', '$pos', '$pa')";
 
     if (mysqli_query($conn, $query)) {
+      $_SESSION['prompt'] = array(
+        'message' => 'Information successfully added!', 
+        'isError' => false
+      );
       header('Location: '.ROOT_URL.'');
     }else{
       echo 'Error: '.mysqli_error($conn);
     }
   }
 
-  //Delete
+  // Delete
   if(isset($_POST['btn-delete'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
     $query = "DELETE FROM official_tbl WHERE id={$id}";
 
      if (mysqli_query($conn, $query)) {
+      $_SESSION['prompt'] = array(
+        'message' => 'Information successfully deleted!', 
+        'isError' => false
+      );
       header('Location: '.ROOT_URL.'');
     }else{
       echo 'Error: '.mysqli_error($conn);
@@ -40,6 +58,21 @@
   mysqli_close($conn);
 ?>
 <?php require('inc/header.php') ?>
+
+<?php $prompt = (!empty($_SESSION['prompt'])) ? $_SESSION['prompt'] : ''; ?>
+<?php if(!empty($prompt)) :?>
+  <?php if((!$prompt['isError'])) :?>
+    <div class="alert alert-success">
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+      <?php echo $prompt['message']; ?>
+    </div>
+  <?php else :?>
+    <div class="alert alert-warning">
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+      <?php echo $prompt['message']; ?>
+    </div>
+  <?php endif ?>
+<?php endif ?>
 
 <h1 class="page-header">
   <span class="glyphicon glyphicon-user"></span> Local Officials 

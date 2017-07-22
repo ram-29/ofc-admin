@@ -1,8 +1,16 @@
 <?php
+  session_start();
   require('config/config.php');
   require('config/db.php');
 
-  //Age Dense
+  # Session Check
+  if (isset($_SESSION['previous'])) {
+    if (basename($_SERVER['PHP_SELF']) != $_SESSION['previous']) {
+      session_destroy();
+    }
+  }
+
+  // Age Dense
   function personAgeDense($conn, $query){
     $result = mysqli_query($conn, $query);
     return mysqli_fetch_assoc($result);
@@ -12,7 +20,7 @@
   $a31_50 = personAgeDense($conn, "SELECT age, COUNT(*) as 'A31_50' FROM official_tbl WHERE age BETWEEN 30 AND 50");
   $a51 = personAgeDense($conn, "SELECT age, COUNT(*) as 'A51' FROM official_tbl WHERE age > 50");
 
-  //Peson Affiliate Dense
+  // Peson Affiliate Dense
   function personAfDense($conn, $query){
     $result = mysqli_query($conn, $query);
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
